@@ -68,6 +68,7 @@ struct TextCleanerMenu: View {
             }
 
             HStack(spacing: 8) {
+                cleanButton("Sentence", systemImage: "textformat.abc", action: .sentenceCase)
                 caseMenu
                 markdownMenu
                 chatMenu
@@ -78,7 +79,7 @@ struct TextCleanerMenu: View {
             recentPanel
         }
         .padding(14)
-        .frame(width: 500)
+        .frame(width: 540)
         .onAppear {
             model.loadClipboardIfInputIsEmpty()
         }
@@ -86,7 +87,6 @@ struct TextCleanerMenu: View {
 
     private var caseMenu: some View {
         Menu {
-            menuAction("Sentence", systemImage: "textformat.abc", action: .sentenceCase)
             menuAction("Title Case", systemImage: "character.cursor.ibeam", action: .titleCase)
             menuAction("lowercase", systemImage: "textformat.size.smaller", action: .lowercase)
             menuAction("UPPERCASE", systemImage: "textformat.size.larger", action: .uppercase)

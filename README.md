@@ -16,7 +16,7 @@ You can also paste or edit text in the popover. Each cleanup action updates the 
 ## Tools
 
 - Plain text, PDF lines, and Smart Clean
-- Case menu: sentence case, title case, lowercase, uppercase
+- Sentence button, plus Case menu: title case, lowercase, uppercase
 - Markdown menu: quote, bullet list, comma list, bold, italic, code
 - Chat menu: bold, italic, monospace, strikethrough
 - Recent cleaned outputs: click any recent item to copy it again
