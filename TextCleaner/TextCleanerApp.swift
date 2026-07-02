@@ -71,7 +71,6 @@ struct TextCleanerMenu: View {
                 caseMenu
                 markdownMenu
                 chatMenu
-                cleanButton("Copy", systemImage: "doc.on.doc", action: .copyOutput)
             }
 
             outputPanel
@@ -79,7 +78,7 @@ struct TextCleanerMenu: View {
             recentPanel
         }
         .padding(14)
-        .frame(width: 460)
+        .frame(width: 500)
         .onAppear {
             model.loadClipboardIfInputIsEmpty()
         }
@@ -87,13 +86,13 @@ struct TextCleanerMenu: View {
 
     private var caseMenu: some View {
         Menu {
-            menuAction("Sentence case", systemImage: "textformat.abc", action: .sentenceCase)
+            menuAction("Sentence", systemImage: "textformat.abc", action: .sentenceCase)
             menuAction("Title Case", systemImage: "character.cursor.ibeam", action: .titleCase)
             menuAction("lowercase", systemImage: "textformat.size.smaller", action: .lowercase)
             menuAction("UPPERCASE", systemImage: "textformat.size.larger", action: .uppercase)
         } label: {
             Label("Case", systemImage: "textformat")
-                .frame(maxWidth: .infinity)
+                .frame(minWidth: 96, maxWidth: .infinity)
         }
         .disabled(model.input.isEmpty)
     }
@@ -109,7 +108,7 @@ struct TextCleanerMenu: View {
             menuAction("Code", systemImage: "chevron.left.forwardslash.chevron.right", action: .markdownInlineCode)
         } label: {
             Label("Markdown", systemImage: "number")
-                .frame(maxWidth: .infinity)
+                .frame(minWidth: 136, maxWidth: .infinity)
         }
         .disabled(model.input.isEmpty)
     }
@@ -122,7 +121,7 @@ struct TextCleanerMenu: View {
             menuAction("Strikethrough", systemImage: "strikethrough", action: .chatStrikethrough)
         } label: {
             Label("Chat", systemImage: "message")
-                .frame(maxWidth: .infinity)
+                .frame(minWidth: 96, maxWidth: .infinity)
         }
         .disabled(model.input.isEmpty)
     }
@@ -216,7 +215,7 @@ struct TextCleanerMenu: View {
             model.perform(action)
         } label: {
             Label(title, systemImage: systemImage)
-                .frame(maxWidth: .infinity)
+                .frame(minWidth: 132, maxWidth: .infinity)
         }
         .disabled(model.isActionDisabled(action))
     }

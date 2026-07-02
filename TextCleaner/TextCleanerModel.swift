@@ -85,7 +85,7 @@ final class TextCleanerModel: ObservableObject {
         case .smartClean:
             transformAndCopy("Smart clean copied.") { TextCleaner.smartClean($0) }
         case .sentenceCase:
-            transformAndCopy("Sentence case copied.") { TextCleaner.sentenceCase($0) }
+            transformAndCopy("Sentence copied.") { TextCleaner.sentenceCase($0) }
         case .titleCase:
             transformAndCopy("Title case copied.") { TextCleaner.titleCase($0) }
         case .lowercase:
