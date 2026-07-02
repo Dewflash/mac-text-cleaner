@@ -11,4 +11,4 @@ It can strip rich formatting by reading and writing plain clipboard text, fix PD
 3. Click `Clean Clipboard` to clean and copy the result back to the clipboard.
 4. Paste anywhere.
 
-You can also paste or edit text in the popover, run a specific cleanup action, and copy the output.
+You can also paste or edit text in the popover. Each cleanup action updates the output preview and copies the cleaned result back to the clipboard immediately.

@@ -65,20 +65,19 @@ final class TextCleanerModel: ObservableObject {
     func perform(_ action: TextCleanerAction) {
         switch action {
         case .plainText:
-            transform("Plain text ready.") { TextCleaner.normalizePlainText($0) }
+            transformAndCopy("Plain text copied.") { TextCleaner.normalizePlainText($0) }
         case .fixPDFLines:
-            transform("Fixed PDF line breaks.") { TextCleaner.fixPDFLines($0) }
+            transformAndCopy("Fixed PDF line breaks and copied.") { TextCleaner.fixPDFLines($0) }
         case .smartClean:
-            transform("Smart clean copied.") { TextCleaner.smartClean($0) }
-            copyOutput()
+            transformAndCopy("Smart clean copied.") { TextCleaner.smartClean($0) }
         case .sentenceCase:
-            transform("Converted to sentence case.") { TextCleaner.sentenceCase($0) }
+            transformAndCopy("Sentence case copied.") { TextCleaner.sentenceCase($0) }
         case .titleCase:
-            transform("Converted to title case.") { TextCleaner.titleCase($0) }
+            transformAndCopy("Title case copied.") { TextCleaner.titleCase($0) }
         case .lowercase:
-            transform("Converted to lowercase.") { $0.lowercased() }
+            transformAndCopy("Lowercase copied.") { $0.lowercased() }
         case .uppercase:
-            transform("Converted to uppercase.") { $0.uppercased() }
+            transformAndCopy("Uppercase copied.") { $0.uppercased() }
         case .copyOutput:
             copyOutput()
         case .replaceClipboard:
@@ -129,6 +128,11 @@ final class TextCleanerModel: ObservableObject {
         let cleaned = cleaner(input)
         output = cleaned
         status = successStatus
+    }
+
+    private func transformAndCopy(_ successStatus: String, _ cleaner: (String) -> String) {
+        transform(successStatus, cleaner)
+        copy(output, status: successStatus)
     }
 
     private func copy(_ value: String, status: String) {
