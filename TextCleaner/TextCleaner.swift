@@ -102,11 +102,80 @@ enum TextCleaner {
         }.joined(separator: " ")
     }
 
+    static func markdownQuote(_ text: String) -> String {
+        normalizePlainText(text)
+            .components(separatedBy: "\n")
+            .map { line in
+                line.isEmpty ? ">" : "> \(line)"
+            }
+            .joined(separator: "\n")
+    }
+
+    static func markdownBulletList(_ text: String) -> String {
+        meaningfulLines(from: text)
+            .map { "- \($0)" }
+            .joined(separator: "\n")
+    }
+
+    static func commaSeparatedLineList(_ text: String) -> String {
+        meaningfulLines(from: text)
+            .joined(separator: ", ")
+    }
+
+    static func markdownBold(_ text: String) -> String {
+        wrapMeaningfulLines(text, prefix: "**", suffix: "**")
+    }
+
+    static func markdownItalic(_ text: String) -> String {
+        wrapMeaningfulLines(text, prefix: "*", suffix: "*")
+    }
+
+    static func markdownInlineCode(_ text: String) -> String {
+        meaningfulLines(from: text)
+            .map { line in
+                if line.contains("`") {
+                    return "`` \(line) ``"
+                }
+
+                return "`\(line)`"
+            }
+            .joined(separator: "\n")
+    }
+
+    static func chatBold(_ text: String) -> String {
+        wrapMeaningfulLines(text, prefix: "*", suffix: "*")
+    }
+
+    static func chatItalic(_ text: String) -> String {
+        wrapMeaningfulLines(text, prefix: "_", suffix: "_")
+    }
+
+    static func chatMonospace(_ text: String) -> String {
+        markdownInlineCode(text)
+    }
+
+    static func chatStrikethrough(_ text: String) -> String {
+        wrapMeaningfulLines(text, prefix: "~", suffix: "~")
+    }
+
     private static func normalizeInlineWhitespace(_ line: String) -> String {
         line
             .components(separatedBy: .whitespacesAndNewlines)
             .filter { !$0.isEmpty }
             .joined(separator: " ")
+    }
+
+    private static func meaningfulLines(from text: String) -> [String] {
+        normalizePlainText(text)
+            .components(separatedBy: "\n")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    private static func wrapMeaningfulLines(_ text: String, prefix: String, suffix: String) -> String {
+        meaningfulLines(from: text)
+            .map { "\(prefix)\($0)\(suffix)" }
+            .joined(separator: "\n")
     }
 
     private static func appendParagraph(_ paragraph: String, to paragraphs: inout [String]) {

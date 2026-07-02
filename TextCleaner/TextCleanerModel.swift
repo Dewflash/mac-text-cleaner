@@ -9,8 +9,17 @@ enum TextCleanerAction {
     case titleCase
     case lowercase
     case uppercase
+    case markdownQuote
+    case markdownBulletList
+    case commaSeparatedLineList
+    case markdownBold
+    case markdownItalic
+    case markdownInlineCode
+    case chatBold
+    case chatItalic
+    case chatMonospace
+    case chatStrikethrough
     case copyOutput
-    case replaceClipboard
 }
 
 @MainActor
@@ -18,11 +27,16 @@ final class TextCleanerModel: ObservableObject {
     @Published var input = ""
     @Published private(set) var output = ""
     @Published private(set) var status = "Paste or clean clipboard text."
+    @Published private(set) var recentOutputs: [String]
 
     private let pasteboard: NSPasteboard
+    private let defaults: UserDefaults
+    private let recentOutputsKey = "recentOutputs"
 
-    init(pasteboard: NSPasteboard = .general) {
+    init(pasteboard: NSPasteboard = .general, defaults: UserDefaults = .standard) {
         self.pasteboard = pasteboard
+        self.defaults = defaults
+        self.recentOutputs = defaults.stringArray(forKey: recentOutputsKey) ?? []
     }
 
     var canCleanClipboard: Bool {
@@ -59,7 +73,7 @@ final class TextCleanerModel: ObservableObject {
         input = text
         let cleaned = TextCleaner.smartClean(text)
         output = cleaned
-        copy(cleaned, status: "Cleaned clipboard and copied result.")
+        copyCleanedOutput(cleaned, status: "Cleaned clipboard and copied result.")
     }
 
     func perform(_ action: TextCleanerAction) {
@@ -78,16 +92,34 @@ final class TextCleanerModel: ObservableObject {
             transformAndCopy("Lowercase copied.") { $0.lowercased() }
         case .uppercase:
             transformAndCopy("Uppercase copied.") { $0.uppercased() }
+        case .markdownQuote:
+            transformAndCopy("Markdown quote copied.") { TextCleaner.markdownQuote($0) }
+        case .markdownBulletList:
+            transformAndCopy("Markdown bullet list copied.") { TextCleaner.markdownBulletList($0) }
+        case .commaSeparatedLineList:
+            transformAndCopy("Comma list copied.") { TextCleaner.commaSeparatedLineList($0) }
+        case .markdownBold:
+            transformAndCopy("Markdown bold copied.") { TextCleaner.markdownBold($0) }
+        case .markdownItalic:
+            transformAndCopy("Markdown italic copied.") { TextCleaner.markdownItalic($0) }
+        case .markdownInlineCode:
+            transformAndCopy("Markdown code copied.") { TextCleaner.markdownInlineCode($0) }
+        case .chatBold:
+            transformAndCopy("Chat bold copied.") { TextCleaner.chatBold($0) }
+        case .chatItalic:
+            transformAndCopy("Chat italic copied.") { TextCleaner.chatItalic($0) }
+        case .chatMonospace:
+            transformAndCopy("Chat monospace copied.") { TextCleaner.chatMonospace($0) }
+        case .chatStrikethrough:
+            transformAndCopy("Chat strikethrough copied.") { TextCleaner.chatStrikethrough($0) }
         case .copyOutput:
             copyOutput()
-        case .replaceClipboard:
-            replaceClipboard()
         }
     }
 
     func isActionDisabled(_ action: TextCleanerAction) -> Bool {
         switch action {
-        case .copyOutput, .replaceClipboard:
+        case .copyOutput:
             return output.isEmpty
         default:
             return input.isEmpty
@@ -101,17 +133,18 @@ final class TextCleanerModel: ObservableObject {
             return
         }
 
-        copy(output, status: "Copied output.")
+        _ = copy(output, status: "Copied output.")
     }
 
-    func replaceClipboard() {
-        guard !output.isEmpty else {
-            status = "Nothing to put on clipboard."
+    func copyRecentOutput(_ value: String) {
+        guard recentOutputs.contains(value) else {
+            status = "Recent item is no longer available."
             NSSound.beep()
             return
         }
 
-        copy(output, status: "Replaced clipboard.")
+        output = value
+        _ = copy(value, status: "Copied recent output.")
     }
 
     func clear() {
@@ -132,18 +165,38 @@ final class TextCleanerModel: ObservableObject {
 
     private func transformAndCopy(_ successStatus: String, _ cleaner: (String) -> String) {
         transform(successStatus, cleaner)
-        copy(output, status: successStatus)
+        copyCleanedOutput(output, status: successStatus)
     }
 
-    private func copy(_ value: String, status: String) {
+    private func copyCleanedOutput(_ value: String, status: String) {
+        if copy(value, status: status) {
+            addRecentOutput(value)
+        }
+    }
+
+    private func copy(_ value: String, status: String) -> Bool {
         pasteboard.clearContents()
 
         guard pasteboard.setString(value, forType: .string) else {
             self.status = "Could not copy text."
             NSSound.beep()
-            return
+            return false
         }
 
         self.status = status
+        return true
+    }
+
+    private func addRecentOutput(_ value: String) {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmed.isEmpty else {
+            return
+        }
+
+        var updated = recentOutputs.filter { $0 != trimmed }
+        updated.insert(trimmed, at: 0)
+        recentOutputs = Array(updated.prefix(5))
+        defaults.set(recentOutputs, forKey: recentOutputsKey)
     }
 }

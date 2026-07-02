@@ -25,12 +25,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 struct TextCleanerMenu: View {
     @ObservedObject var model: TextCleanerModel
 
-    private let columns = [
-        GridItem(.flexible(), spacing: 8),
-        GridItem(.flexible(), spacing: 8),
-        GridItem(.flexible(), spacing: 8)
-    ]
-
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
@@ -67,25 +61,70 @@ struct TextCleanerMenu: View {
                 }
             }
 
-            LazyVGrid(columns: columns, spacing: 8) {
+            HStack(spacing: 8) {
                 cleanButton("Plain Text", systemImage: "textformat", action: .plainText)
                 cleanButton("PDF Lines", systemImage: "text.alignleft", action: .fixPDFLines)
                 cleanButton("Smart Clean", systemImage: "wand.and.stars", action: .smartClean)
-                cleanButton("Sentence", systemImage: "textformat.abc", action: .sentenceCase)
-                cleanButton("Title Case", systemImage: "character.cursor.ibeam", action: .titleCase)
-                cleanButton("lowercase", systemImage: "textformat.size.smaller", action: .lowercase)
-                cleanButton("UPPERCASE", systemImage: "textformat.size.larger", action: .uppercase)
+            }
+
+            HStack(spacing: 8) {
+                caseMenu
+                markdownMenu
+                chatMenu
                 cleanButton("Copy", systemImage: "doc.on.doc", action: .copyOutput)
-                cleanButton("Replace Clip", systemImage: "arrow.left.arrow.right", action: .replaceClipboard)
             }
 
             outputPanel
+
+            recentPanel
         }
         .padding(14)
         .frame(width: 460)
         .onAppear {
             model.loadClipboardIfInputIsEmpty()
         }
+    }
+
+    private var caseMenu: some View {
+        Menu {
+            menuAction("Sentence case", systemImage: "textformat.abc", action: .sentenceCase)
+            menuAction("Title Case", systemImage: "character.cursor.ibeam", action: .titleCase)
+            menuAction("lowercase", systemImage: "textformat.size.smaller", action: .lowercase)
+            menuAction("UPPERCASE", systemImage: "textformat.size.larger", action: .uppercase)
+        } label: {
+            Label("Case", systemImage: "textformat")
+                .frame(maxWidth: .infinity)
+        }
+        .disabled(model.input.isEmpty)
+    }
+
+    private var markdownMenu: some View {
+        Menu {
+            menuAction("Quote", systemImage: "quote.bubble", action: .markdownQuote)
+            menuAction("Bullet List", systemImage: "list.bullet", action: .markdownBulletList)
+            menuAction("Comma List", systemImage: "text.badge.plus", action: .commaSeparatedLineList)
+            Divider()
+            menuAction("Bold", systemImage: "bold", action: .markdownBold)
+            menuAction("Italic", systemImage: "italic", action: .markdownItalic)
+            menuAction("Code", systemImage: "chevron.left.forwardslash.chevron.right", action: .markdownInlineCode)
+        } label: {
+            Label("Markdown", systemImage: "number")
+                .frame(maxWidth: .infinity)
+        }
+        .disabled(model.input.isEmpty)
+    }
+
+    private var chatMenu: some View {
+        Menu {
+            menuAction("Bold", systemImage: "bold", action: .chatBold)
+            menuAction("Italic", systemImage: "italic", action: .chatItalic)
+            menuAction("Monospace", systemImage: "chevron.left.forwardslash.chevron.right", action: .chatMonospace)
+            menuAction("Strikethrough", systemImage: "strikethrough", action: .chatStrikethrough)
+        } label: {
+            Label("Chat", systemImage: "message")
+                .frame(maxWidth: .infinity)
+        }
+        .disabled(model.input.isEmpty)
     }
 
     private var header: some View {
@@ -106,6 +145,36 @@ struct TextCleanerMenu: View {
                 Label("Quit", systemImage: "power")
             }
             .keyboardShortcut("q")
+        }
+    }
+
+    private var recentPanel: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Recent")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            if model.recentOutputs.isEmpty {
+                Text("Recent cleaned text will appear here.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 2)
+            } else {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(model.recentOutputs, id: \.self) { value in
+                        Button {
+                            model.copyRecentOutput(value)
+                        } label: {
+                            Label(recentPreview(value), systemImage: "clock.arrow.circlepath")
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
         }
     }
 
@@ -150,5 +219,27 @@ struct TextCleanerMenu: View {
                 .frame(maxWidth: .infinity)
         }
         .disabled(model.isActionDisabled(action))
+    }
+
+    private func menuAction(_ title: String, systemImage: String, action: TextCleanerAction) -> some View {
+        Button {
+            model.perform(action)
+        } label: {
+            Label(title, systemImage: systemImage)
+        }
+    }
+
+    private func recentPreview(_ value: String) -> String {
+        let singleLine = value
+            .components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .joined(separator: " / ")
+
+        if singleLine.count <= 72 {
+            return singleLine
+        }
+
+        return String(singleLine.prefix(72)) + "..."
     }
 }
