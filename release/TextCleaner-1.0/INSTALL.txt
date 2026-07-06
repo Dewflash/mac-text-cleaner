@@ -1,0 +1,8 @@
+TextCleaner
+
+To install:
+1. Open TextCleaner-1.0.dmg or unzip TextCleaner-1.0.zip.
+2. Drag TextCleaner.app to your Applications folder.
+3. Launch TextCleaner from Applications.
+
+If macOS warns that the app was downloaded from the internet, open it from Finder with Control-click > Open.
