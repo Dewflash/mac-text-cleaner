@@ -31,5 +31,6 @@ You can also paste or edit text in the popover. Each cleanup action updates the 
 
 ## Build from source
 
+    make build             # visible app at build/TextCleaner.app
     make verify            # release build + unit tests (needs a logged-in macOS session)
     Scripts/package.sh     # rebuild release/TextCleaner-<version>.dmg and .zip

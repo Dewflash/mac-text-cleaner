@@ -9,9 +9,9 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
-xcodebuild -scheme TextCleaner -configuration Release -derivedDataPath .build/DerivedData -quiet build
+make build
 
-APP=".build/DerivedData/Build/Products/Release/TextCleaner.app"
+APP="build/TextCleaner.app"
 if [ ! -d "$APP" ]; then
     echo "Missing built app at $APP" >&2
     exit 1
@@ -22,7 +22,7 @@ trap 'rm -rf "$STAGE"' EXIT
 
 FOLDER="$STAGE/TextCleaner-$VERSION"
 mkdir -p "$FOLDER"
-ditto "$APP" "$FOLDER/TextCleaner.app"
+ditto --norsrc --noextattr --noqtn --noacl "$APP" "$FOLDER/TextCleaner.app"
 
 cat > "$FOLDER/INSTALL.txt" <<EOF
 TextCleaner $VERSION
@@ -35,9 +35,9 @@ To install:
 If macOS warns that the app was downloaded from the internet, open it from Finder with Control-click > Open.
 EOF
 
+rm -rf release
 mkdir -p release
-rm -f "release/TextCleaner-$VERSION.dmg" "release/TextCleaner-$VERSION.zip"
 hdiutil create -volname "TextCleaner $VERSION" -srcfolder "$FOLDER" -ov -format UDZO "release/TextCleaner-$VERSION.dmg"
-ditto -c -k --keepParent "$FOLDER" "release/TextCleaner-$VERSION.zip"
+ditto --norsrc --noextattr --noqtn --noacl -c -k --keepParent "$FOLDER" "release/TextCleaner-$VERSION.zip"
 
 echo "Built release/TextCleaner-$VERSION.dmg and release/TextCleaner-$VERSION.zip"

@@ -4,3 +4,5 @@ xcuserdata/
 .DS_Store
 .build/
 build/
+.claude/
+TextCleaner.xcodeproj/project.xcworkspace/
