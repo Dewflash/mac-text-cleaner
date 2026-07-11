@@ -47,3 +47,27 @@ Full verbatim output: no output. The command remained running as PID 77934 until
 - Terminated only the hung automation, TextCleaner test instance, and temporary unsaved TextEdit document.
 
 Because the Pop/error sounds, cleaned paste, popover output/status/Recent state, and image-clipboard failure path could not be observed, none of the eight manual steps was marked PASS and the plan was not landed.
+
+## PLAN-final-polish — 2026-07-11
+
+Release QA rows 5–15 and 18–20 failed against `/Applications/TextCleaner.app` installed from `release/TextCleaner-1.1.0.dmg`. Per the plan, the release was committed with a DO-NOT-SHIP verdict rather than reverted.
+
+### Failing commands
+
+```console
+$ osascript -e 'tell application "System Events" to tell process "TextCleaner" to get {name, role, description} of every UI element'
+70:95: execution error: System Events got an error: osascript is not allowed assistive access. (-1728)
+
+$ osascript -e 'tell application "System Events" to tell process "TextCleaner" to click button "Quit" of window 1'
+66:97: execution error: System Events got an error: osascript is not allowed assistive access. (-1719)
+```
+
+Both commands exited 1.
+
+### What I tried
+
+- Built and verified both artifacts, mounted the dmg, confirmed its root layout and embedded version 1.1.0, installed the packaged app, and verified its signature.
+- Launched the installed app and observed the on-screen menu-bar status-item count increase from 14 to 15. The running process reported accessory activation policy, and installed metadata reported version 1.1.0/build 2.
+- Placed row 6's test text on the real clipboard successfully, then attempted to inspect and control the installed popover. macOS denied assistive access, so rows 5–15 and 18–19 could not be exercised.
+- Attempted the installed app's Quit button separately; macOS denied it as shown above. The QA process was then terminated from the shell, and the status-item count returned to 14.
+- Marked hotkey rows 16–17 N/A because the feature was not shipped, and marked row 9's wrapped-bullet condition N/A because that fix was not shipped.
